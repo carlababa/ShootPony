@@ -11,6 +11,7 @@ import {
   View,
   Image,
   Dimensions,
+  TouchableOpacity,
 } from 'react-native';
 
 const screen = Dimensions.get('window');
@@ -18,7 +19,11 @@ export default class Start extends Component {
   render() {
     return (
       <View style={styles.container}>
-        <Image style={styles.backgroundImage} source={require('../images/pond.png')} />
+        <Image style={styles.backgroundImage} source={require('../images/bgImage.png')}>
+          <TouchableOpacity>
+            <Image style={styles.start} source={require('../images/play.png')} />
+          </TouchableOpacity>
+        </Image>
       </View>
     );
   }
@@ -27,13 +32,17 @@ export default class Start extends Component {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#F5FCFF',
+    flexDirection: 'column',
   },
   backgroundImage: {
     height: screen.height,
-    resizeMode: 'contain',
+    width: screen.width,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  start: {
+    width: screen.width / 2,
+    height: screen.width / 2,
   },
 });
 

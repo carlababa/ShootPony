@@ -58,12 +58,15 @@ export default class Start extends Component {
     super(...args);
 
     this.poneys = [...Array(6).keys()];
+    const pony = [<TouchableOpacity onPress={() => this.increasePoints()} style={{ paddingLeft: Math.random() * screen.width }}><Game /></TouchableOpacity>];
     this.state = {
       lifes: [1, 2, 3, 4, 5],
       points: 0,
       showStart: true,
+      pony,
     };
   }
+
 
   componentWillMount() {
     this.animatedValue = new Animated.Value(1);
@@ -73,15 +76,42 @@ export default class Start extends Component {
     this.setState({ showStart: false });
   }
 
-  renderPony(i) {
-    this.poneys = this.poneys.slice(0, -1);
+  // renderPony() {
+  //   this.poneys = this.poneys.slice(0, -1);
 
-    const randomNum = Math.random() * screen.width;
-    return (
-      <View key={i} style={{ paddingLeft: randomNum }}>
-        <Game />
-      </View>
-    );
+    // if (this.poneys.length === 0) {
+    //   clearTimeout(this.myInterval);
+    // }
+
+  //   return (
+  //     <View style={{ position: 'absolute', top: 0, paddingLeft: Math.random() * screen.width }}>
+  //       <Game />
+  //     </View>
+  //   );
+  // }
+
+
+  renderPony() {
+    this.setState({
+      pony: [
+        ...this.state.pony,
+        <TouchableOpacity
+          onPress={() => this.increasePoints()}
+          style={{ position: 'absolute', top: -40, paddingLeft: Math.random() * screen.width }}>
+          <Game />
+        </TouchableOpacity>,
+      ],
+    });
+  }
+
+  startLoop() {
+    this.myInterval = setTimeout(() => this.renderPony(), 1500);
+  }
+
+  increasePoints() {
+    this.setState({
+      points: this.state.points + 1,
+    });
   }
 
   render() {
@@ -90,7 +120,8 @@ export default class Start extends Component {
         <Image style={styles.backgroundImage} source={require('../images/bgImage.png')}>
           {!this.state.showStart &&
             <View style={styles.gameContainer}>
-              {this.poneys.map(item => this.renderPony(item))}
+              {this.startLoop()}
+              {this.state.pony}
             </View>
           }
           <TouchableOpacity onPress={() => this.startPress()}>

@@ -9,13 +9,19 @@ import {
   TouchableOpacity,
   // ListView,
 } from 'react-native';
-// import Game from './Game';
+import Game from './Game';
 
 const screen = Dimensions.get('window');
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     flexDirection: 'column',
+  },
+  gameContainer: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    left: 0,
   },
   backgroundImage: {
     height: screen.height,
@@ -51,6 +57,7 @@ export default class Start extends Component {
   constructor(...args) {
     super(...args);
 
+    this.poneys = [...Array(6).keys()];
     this.state = {
       lifes: [1, 2, 3, 4, 5],
       points: 0,
@@ -62,37 +69,32 @@ export default class Start extends Component {
     this.animatedValue = new Animated.Value(1);
   }
 
-  handlePressIn() {
-    Animated.spring(this.animatedValue, {
-      toValue: 0.5,
-    }).start();
-  }
-
-  handlePressOut() {
-    Animated.spring(this.animatedValue, {
-      toValue: 1,
-      friction: 3,
-      tension: 40,
-    }).start();
+  startPress() {
     this.setState({ showStart: false });
   }
 
+  renderPony(i) {
+    this.poneys = this.poneys.slice(0, -1);
+
+    const randomNum = Math.random() * screen.width;
+    return (
+      <View key={i} style={{ paddingLeft: randomNum }}>
+        <Game />
+      </View>
+    );
+  }
+
   render() {
-    const animatedStyle = {
-      transform: [{ scale: this.animatedValue }],
-    };
     return (
       <View style={styles.container}>
         <Image style={styles.backgroundImage} source={require('../images/bgImage.png')}>
-          <TouchableOpacity
-            onPressIn={() => this.handlePressIn()}
-            onPressOut={() => this.handlePressOut()}
-          >
-            {this.state.showStart &&
-              <Animated.View style={animatedStyle}>
-                <Image style={styles.start} source={require('../images/play.png')} />
-              </Animated.View>
-            }
+          {!this.state.showStart &&
+            <View style={styles.gameContainer}>
+              {this.poneys.map(item => this.renderPony(item))}
+            </View>
+          }
+          <TouchableOpacity onPress={() => this.startPress()}>
+            {this.state.showStart && <Image style={styles.start} source={require('../images/play.png')} />}
           </TouchableOpacity>
           <Text style={styles.counter}>{this.state.points}</Text>
           <View style={styles.lifesContainer}>

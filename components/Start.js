@@ -57,11 +57,11 @@ export default class Start extends Component {
   constructor(...args) {
     super(...args);
 
+    this.points = 0;
     this.poneys = [...Array(6).keys()];
     const pony = [<TouchableOpacity onPress={() => this.increasePoints()} style={{ paddingLeft: Math.random() * screen.width }}><Game /></TouchableOpacity>];
     this.state = {
       lifes: [1, 2, 3, 4, 5],
-      points: 0,
       showStart: true,
       pony,
     };
@@ -91,11 +91,12 @@ export default class Start extends Component {
   // }
 
 
-  renderPony() {
+  renderPony(i) {
     this.setState({
       pony: [
         ...this.state.pony,
         <TouchableOpacity
+          key={i}
           onPress={() => this.increasePoints()}
           style={{ position: 'absolute', top: -40, paddingLeft: Math.random() * screen.width }}>
           <Game />
@@ -105,13 +106,13 @@ export default class Start extends Component {
   }
 
   startLoop() {
-    this.myInterval = setTimeout(() => this.renderPony(), 1500);
+    this.myInterval = setTimeout(i => this.renderPony(i), 1500);
   }
 
   increasePoints() {
-    this.setState({
-      points: this.state.points + 1,
-    });
+    this.points = this.points + 1;
+    const removePony = this.state.pony.pop();
+    this.setState({ pony: removePony });
   }
 
   render() {
@@ -127,7 +128,7 @@ export default class Start extends Component {
           <TouchableOpacity onPress={() => this.startPress()}>
             {this.state.showStart && <Image style={styles.start} source={require('../images/play.png')} />}
           </TouchableOpacity>
-          <Text style={styles.counter}>{this.state.points}</Text>
+          <Text style={styles.counter}>{this.points}</Text>
           <View style={styles.lifesContainer}>
             {this.state.lifes.map(item => <Image key={item} style={styles.heart} source={require('../images/heart.png')} />)}
           </View>

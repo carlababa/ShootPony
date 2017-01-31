@@ -7,9 +7,9 @@ import {
   Text,
   Animated,
   TouchableOpacity,
-  // ListView,
+  Easing,
 } from 'react-native';
-import Game from './Game';
+// import Game from './Game';
 
 const screen = Dimensions.get('window');
 const styles = StyleSheet.create({
@@ -51,6 +51,10 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
   },
+  pony: {
+    width: 90,
+    height: 90,
+  },
 });
 
 export default class Start extends Component {
@@ -58,80 +62,124 @@ export default class Start extends Component {
     super(...args);
 
     this.points = 0;
-    this.poneys = [...Array(6).keys()];
-    const pony = [<TouchableOpacity onPress={() => this.increasePoints()} style={{ paddingLeft: Math.random() * screen.width }}><Game /></TouchableOpacity>];
+    this.animatedValue = [];
+    this.ponyCount = 0;
+    this.duration = 3500;
+
     this.state = {
-      lifes: [1, 2, 3, 4, 5],
+      firstTime: true,
+      lifes: [],
       showStart: true,
-      pony,
+      poneys: [],
     };
   }
 
+  createNextPony() {
+    const pony = { key: this.ponyCount, animatedValue: new Animated.Value(1), randomPosition: Math.random() * (screen.width - 90) };
+    this.ponyCount += 1;
 
-  componentWillMount() {
-    this.animatedValue = new Animated.Value(1);
+    if (this.state.lifes.length === 0) {
+      clearTimeout(this.timer);
+      this.setState({
+        poneys: [],
+        firstTime: false,
+      });
+      return;
+    }
+
+    if (this.points % 10 === 0) {
+      this.duration = this.duration - (this.duration * 10 / 100);
+    }
+
+    this.setState({
+      poneys: [...this.state.poneys, pony],
+    });
+
+    Animated.sequence([Animated.timing(
+      pony.animatedValue,
+      {
+        toValue: screen.height + 90,
+        duration: this.duration,
+        easing: Easing.linear,
+      },
+    )]).start(() => {
+      this.setState({
+        poneys: this.state.poneys.filter(item => pony.key !== item.key),
+        lifes: this.state.lifes.slice(0, -1),
+      });
+    });
+
+    this.startTimer();
   }
+
+  startTimer() {
+    this.timer = setTimeout(() => this.createNextPony(), 1500);
+  }
+
 
   startPress() {
-    this.setState({ showStart: false });
+    this.points = 0;
+    this.setState({
+      showStart: false,
+      lifes: [...Array(5).keys()],
+    }, this.createNextPony);
   }
 
-  // renderPony() {
-  //   this.poneys = this.poneys.slice(0, -1);
-
-    // if (this.poneys.length === 0) {
-    //   clearTimeout(this.myInterval);
-    // }
-
-  //   return (
-  //     <View style={{ position: 'absolute', top: 0, paddingLeft: Math.random() * screen.width }}>
-  //       <Game />
-  //     </View>
-  //   );
-  // }
-
-
-  renderPony(i) {
+  removePony(key) {
+    this.points += 1;
     this.setState({
-      pony: [
-        ...this.state.pony,
-        <TouchableOpacity
-          key={i}
-          onPress={() => this.increasePoints()}
-          style={{ position: 'absolute', top: -40, paddingLeft: Math.random() * screen.width }}>
-          <Game />
-        </TouchableOpacity>,
-      ],
+      lifes: [...this.state.lifes, this.state.lifes.length - 1],
+      poneys: this.state.poneys.filter(item => key !== item.key),
     });
   }
 
-  startLoop() {
-    this.myInterval = setTimeout(i => this.renderPony(i), 1500);
+  renderGame() {
+    const animations = this.state.poneys.map((pony) => {
+      const animatedStyle = {
+        padding: 20,
+        transform: [{ translateY: pony.animatedValue }],
+      };
+
+      return (
+        <TouchableOpacity onPress={() => this.removePony(pony.key)} key={pony.key} style={{ position: 'absolute', top: -90, paddingLeft: pony.randomPosition }}>
+          <Animated.View style={animatedStyle}>
+            <Image style={styles.pony} source={require('../images/poney.gif')} />
+          </Animated.View>
+        </TouchableOpacity>
+      );
+    });
+
+    return (
+      <View style={styles.backgroundImage}>
+        {!this.state.showStart &&
+          <View style={styles.gameContainer}>
+            {animations}
+          </View>
+        }
+        <TouchableOpacity onPress={() => this.startPress()}>
+          {this.state.showStart && <Image style={styles.start} source={require('../images/play.png')} />}
+        </TouchableOpacity>
+        <Text style={styles.counter}>{this.points}</Text>
+        <View style={styles.lifesContainer}>
+          {this.state.lifes.map((item, i) => <Image key={item[i]} style={styles.heart} source={require('../images/heart.png')} />)}
+        </View>
+      </View>
+    );
   }
 
-  increasePoints() {
-    this.points = this.points + 1;
-    const removePony = this.state.pony.pop();
-    this.setState({ pony: removePony });
+  renderRestart() {
+    return (
+      <TouchableOpacity onPress={() => this.startPress()}>
+        <Image style={styles.start} resizeMode="contain" source={require('../images/reload.png')} />
+      </TouchableOpacity>
+    );
   }
 
   render() {
     return (
       <View style={styles.container}>
         <Image style={styles.backgroundImage} source={require('../images/bgImage.png')}>
-          {!this.state.showStart &&
-            <View style={styles.gameContainer}>
-              {this.startLoop()}
-              {this.state.pony}
-            </View>
-          }
-          <TouchableOpacity onPress={() => this.startPress()}>
-            {this.state.showStart && <Image style={styles.start} source={require('../images/play.png')} />}
-          </TouchableOpacity>
-          <Text style={styles.counter}>{this.points}</Text>
-          <View style={styles.lifesContainer}>
-            {this.state.lifes.map(item => <Image key={item} style={styles.heart} source={require('../images/heart.png')} />)}
-          </View>
+          {this.state.lifes.length || this.state.firstTime ? this.renderGame() : this.renderRestart()}
         </Image>
       </View>
     );

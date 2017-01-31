@@ -10,11 +10,11 @@ import {
   View,
   Image,
   Animated,
-  Dimensions,
-  Easing,
+  // Dimensions,
+  // Easing,
 } from 'react-native';
 
-const screen = Dimensions.get('window');
+// const screen = Dimensions.get('window');
 const styles = StyleSheet.create({
   pony: {
     width: 90,
@@ -23,26 +23,26 @@ const styles = StyleSheet.create({
 });
 
 export default class Game extends Component {
-  constructor(...args) {
-    super(...args);
+  // constructor(...args) {
+  //   super(...args);
+  //
+  //   this.state = {
+  //     lifes: [1, 2, 3, 4, 5],
+  //   };
+  // }
+  //
+  // componentWillMount() {
+  //   this.animatedValue = new Animated.Value(1);
+  // }
 
-    this.state = {
-      lifes: [1, 2, 3, 4, 5],
-    };
-  }
-
-  componentWillMount() {
-    this.animatedValue = new Animated.Value(1);
-  }
-
-  componentDidMount() {
-    Animated.stagger(500,
-      this.state.lifes.map(() => Animated.timing(this.animatedValue, {
-        toValue: screen.height,
-        duration: 2000,
-        easing: Easing.linear,
-      }))).start();
-  }
+  // componentDidMount() {
+  //   Animated.stagger(500,
+  //     this.state.lifes.map(() => Animated.timing(this.animatedValue, {
+  //       toValue: screen.height,
+  //       duration: 2000,
+  //       easing: Easing.linear,
+  //     }))).start();
+  // }
 
   render() {
     const animatedStyle = {
